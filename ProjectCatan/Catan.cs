@@ -140,12 +140,16 @@ namespace ProjectCatan
 
         public bool IsNull => Point == new Point(-1, -1, -1);
 
+        public bool GetRoad(int index) => roads[index];
+        public Team GetRoadTeam(int index) => roadTeams[index];
+        public Vertex GetVertex(int index) => vertices[index];
+        public Team GetVertexTeam(int index) => vertexTeams[index];
+
         public void SetRoad(int index, Team team)
         {
             roads[index] = true;
             roadTeams[index] = team;
         }
-
         public void SetVertex(int index, Team team, Vertex vertex)
         {
             vertices[index] = vertex;
@@ -244,31 +248,97 @@ namespace ProjectCatan
 
         public Cell[] GeRoundedCells(Point point) => cells.Where(x => Math.Abs(x.Point.Q - point.Q) == 1 && Math.Abs(x.Point.R - point.R) == 1 && Math.Abs(x.Point.S - point.S) == 1 && !x.IsNull).ToArray();
 
-        public Cell[] GetVertexCells(Point point, int index)
+        public void GetRoundedVertices(Point point, int index, out Vertex vertex, out Team vertexTeam)
         {
-            Cell[] cells = Array.Empty<Cell>();
+            vertex = 0;
+            vertexTeam = 0;
             switch (index)
             {
                 case 0:
-                    cells = new Cell[2] { GetCell(point.LeftUp()), GetCell(point.RightUp()) };
+                    if (!GetCell(point.LeftUp()).IsNull)
+                    {
+                        vertex = GetCell(point.LeftUp()).GetVertex(1);
+                        vertexTeam = GetCell(point.LeftUp()).GetVertexTeam(1);
+                        return;
+                    }
+                    if (!GetCell(point.RightUp()).IsNull)
+                    {
+                        vertex = GetCell(point.RightUp()).GetVertex(5);
+                        vertexTeam = GetCell(point.RightUp()).GetVertexTeam(5);
+                        return;
+                    }
                     break;
                 case 1:
-                    cells = new Cell[2] { GetCell(point.RightUp()), GetCell(point.Right()) };
+                    if (!GetCell(point.RightUp()).IsNull)
+                    {
+                        vertex = GetCell(point.RightUp()).GetVertex(2);
+                        vertexTeam = GetCell(point.RightUp()).GetVertexTeam(2);
+                        return;
+                    }
+                    if (!GetCell(point.RightUp()).IsNull)
+                    {
+                        vertex = GetCell(point.Right()).GetVertex(0);
+                        vertexTeam = GetCell(point.Right()).GetVertexTeam(0);
+                        return;
+                    }
                     break;
                 case 2:
-                    cells = new Cell[2] { GetCell(point.Right()), GetCell(point.RightDown()) };
+                    if (!GetCell(point.Right()).IsNull)
+                    {
+                        vertex = GetCell(point.Right()).GetVertex(3);
+                        vertexTeam = GetCell(point.Right()).GetVertexTeam(3);
+                        return;
+                    }
+                    if (!GetCell(point.RightDown()).IsNull)
+                    {
+                        vertex = GetCell(point.RightDown()).GetVertex(1);
+                        vertexTeam = GetCell(point.RightDown()).GetVertexTeam(1);
+                        return;
+                    }
                     break;
                 case 3:
-                    cells = new Cell[2] { GetCell(point.RightDown()), GetCell(point.LeftDown()) };
+                    if (!GetCell(point.RightDown()).IsNull)
+                    {
+                        vertex = GetCell(point.RightDown()).GetVertex(4);
+                        vertexTeam = GetCell(point.RightDown()).GetVertexTeam(4);
+                        return;
+                    }
+                    if (!GetCell(point.LeftDown()).IsNull)
+                    {
+                        vertex = GetCell(point.LeftDown()).GetVertex(2);
+                        vertexTeam = GetCell(point.LeftDown()).GetVertexTeam(2);
+                        return;
+                    }
                     break;
                 case 4:
-                    cells = new Cell[2] { GetCell(point.LeftDown()), GetCell(point.Left()) };
+                    if (!GetCell(point.LeftDown()).IsNull)
+                    {
+                        vertex = GetCell(point.LeftDown()).GetVertex(5);
+                        vertexTeam = GetCell(point.LeftDown()).GetVertexTeam(5);
+                        return;
+                    }
+                    if (!GetCell(point.Left()).IsNull)
+                    {
+                        vertex = GetCell(point.Left()).GetVertex(3);
+                        vertexTeam = GetCell(point.Left()).GetVertexTeam(3);
+                        return;
+                    }
                     break;
                 case 5:
-                    cells = new Cell[2] { GetCell(point.Left()), GetCell(point.LeftUp()) };
+                    if (!GetCell(point.Left()).IsNull)
+                    {
+                        vertex = GetCell(point.Left()).GetVertex(0);
+                        vertexTeam = GetCell(point.Left()).GetVertexTeam(0);
+                        return;
+                    }
+                    if (!GetCell(point.LeftUp()).IsNull)
+                    {
+                        vertex = GetCell(point.LeftUp()).GetVertex(4);
+                        vertexTeam = GetCell(point.LeftUp()).GetVertexTeam(4);
+                        return;
+                    }
                     break;
             }
-            return cells.Where(x => !x.IsNull).ToArray();
         }
 
         public Cell GetEdgeCells(Point point, int index, bool reverse = false)
@@ -291,12 +361,8 @@ namespace ProjectCatan
 
         public bool canSetSettlement(Point point, int index, Team team)
         {
-            Cell[] cells = GetVertexCells(point, index);
-            if (cells.Length == 0) { return false; }
-            foreach (Cell cell in cells)
-            {
-                //cell.IsVertex(cell.ConvertIndex(index, point));
-            }
+            GetRoundedVertices(point, index, out Vertex vertex, out Team vertexTeam);
+
             return true;
         }
     }
