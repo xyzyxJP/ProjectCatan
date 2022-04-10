@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProjectCatan
 {
+
     internal class Catan
     {
 
@@ -37,6 +38,8 @@ namespace ProjectCatan
 
     internal class Point
     {
+        //https://www.redblobgames.com/grids/hexagons/
+
         private readonly int q;
         private readonly int r;
         private readonly int s;
@@ -59,19 +62,12 @@ namespace ProjectCatan
             this.s = s;
         }
 
-        public Point RightUp() => new(Q + 1, R - 1, S);
-        public Point Right() => new(Q + 1, R, S - 1);
-        public Point RightDown() => new(Q, R + 1, S - 1);
-        public Point LeftDown() => new(Q - 1, R + 1, S);
-        public Point Left() => new(Q - 1, R, S + 1);
-        public Point LeftUp() => new(Q, R - 1, S + 1);
-
-        public Point RightUp(int distance) => new(Q + distance, R - distance, S);
-        public Point Right(int distance) => new(Q + distance, R, S - distance);
-        public Point RightDown(int distance) => new(Q, R + distance, S - distance);
-        public Point LeftDown(int distance) => new(Q - distance, R + distance, S);
-        public Point Left(int distance) => new(Q - distance, R, S + distance);
-        public Point LeftUp(int distance) => new(Q, R - distance, S + distance);
+        public Point RightUp(int distance = 1) => new(Q + distance, R - distance, S);
+        public Point Right(int distance = 1) => new(Q + distance, R, S - distance);
+        public Point RightDown(int distance = 1) => new(Q, R + distance, S - distance);
+        public Point LeftDown(int distance = 1) => new(Q - distance, R + distance, S);
+        public Point Left(int distance = 1) => new(Q - distance, R, S + distance);
+        public Point LeftUp(int distance = 1) => new(Q, R - distance, S + distance);
 
         public override bool Equals(object? obj)
         {
@@ -88,6 +84,15 @@ namespace ProjectCatan
         public override string ToString()
         {
             return $"({Q}, {R}, {S})";
+        }
+
+        public static Point operator +(Point aPoint, Point bPoint)
+        {
+            return new Point(aPoint.Q + bPoint.Q, aPoint.R + bPoint.R, aPoint.S + bPoint.S);
+        }
+        public static Point operator -(Point aPoint, Point bPoint)
+        {
+            return new Point(aPoint.Q - bPoint.Q, aPoint.R - bPoint.R, aPoint.S - bPoint.S);
         }
     }
 
@@ -133,6 +138,8 @@ namespace ProjectCatan
         public bool IsVertex(int index, Team team) => vertexTeams[index] == team;
         public bool IsThieves => isThieves;
 
+        public bool IsNull => Point == new Point(-1, -1, -1);
+
         public void SetRoad(int index, Team team)
         {
             roads[index] = true;
@@ -143,6 +150,41 @@ namespace ProjectCatan
         {
             vertices[index] = vertex;
             vertexTeams[index] = team;
+        }
+
+        public int ConvertIndex(int oldIndex, Point oldPoint)
+        {
+            if (Point == oldPoint.RightUp())
+            {
+                if (oldIndex == 0) { return 4; }
+                if (oldIndex == 1) { return 3; }
+            }
+            if (Point == oldPoint.Right())
+            {
+                if (oldIndex == 1) { return 5; }
+                if (oldIndex == 2) { return 4; }
+            }
+            if (Point == oldPoint.RightDown())
+            {
+                if (oldIndex == 2) { return 0; }
+                if (oldIndex == 3) { return 5; }
+            }
+            if (Point == oldPoint.LeftDown())
+            {
+                if (oldIndex == 3) { return 1; }
+                if (oldIndex == 4) { return 0; }
+            }
+            if (Point == oldPoint.Left())
+            {
+                if (oldIndex == 4) { return 2; }
+                if (oldIndex == 5) { return 1; }
+            }
+            if (Point == oldPoint.LeftUp())
+            {
+                if (oldIndex == 5) { return 3; }
+                if (oldIndex == 0) { return 2; }
+            }
+            return -1;
         }
 
         public int Count(Team team)
@@ -200,20 +242,33 @@ namespace ProjectCatan
 
         public Cell GetCell(Point point) => IsRange(point) ? cells.Where(x => x.Point == point).ToArray()[0] : new();
 
-        public Cell[] GeRoundedCells(Point point) => cells.Where(x => Math.Abs(x.Point.Q - point.Q) == 1 && Math.Abs(x.Point.R - point.R) == 1 && Math.Abs(x.Point.S - point.S) == 1 && x.Resource != 0).ToArray();
+        public Cell[] GeRoundedCells(Point point) => cells.Where(x => Math.Abs(x.Point.Q - point.Q) == 1 && Math.Abs(x.Point.R - point.R) == 1 && Math.Abs(x.Point.S - point.S) == 1 && !x.IsNull).ToArray();
 
         public Cell[] GetVertexCells(Point point, int index)
         {
-            return index switch
+            Cell[] cells = Array.Empty<Cell>();
+            switch (index)
             {
-                0 => new Cell[2] { GetCell(point.LeftUp()), GetCell(point.RightUp()) },
-                1 => new Cell[2] { GetCell(point.RightUp()), GetCell(point.Right()) },
-                2 => new Cell[2] { GetCell(point.Right()), GetCell(point.RightDown()) },
-                3 => new Cell[2] { GetCell(point.RightDown()), GetCell(point.LeftDown()) },
-                4 => new Cell[2] { GetCell(point.LeftDown()), GetCell(point.Left()) },
-                5 => new Cell[2] { GetCell(point.Left()), GetCell(point.LeftUp()) },
-                _ => Array.Empty<Cell>(),
-            };
+                case 0:
+                    cells = new Cell[2] { GetCell(point.LeftUp()), GetCell(point.RightUp()) };
+                    break;
+                case 1:
+                    cells = new Cell[2] { GetCell(point.RightUp()), GetCell(point.Right()) };
+                    break;
+                case 2:
+                    cells = new Cell[2] { GetCell(point.Right()), GetCell(point.RightDown()) };
+                    break;
+                case 3:
+                    cells = new Cell[2] { GetCell(point.RightDown()), GetCell(point.LeftDown()) };
+                    break;
+                case 4:
+                    cells = new Cell[2] { GetCell(point.LeftDown()), GetCell(point.Left()) };
+                    break;
+                case 5:
+                    cells = new Cell[2] { GetCell(point.Left()), GetCell(point.LeftUp()) };
+                    break;
+            }
+            return cells.Where(x => !x.IsNull).ToArray();
         }
 
         public Cell GetEdgeCells(Point point, int index, bool reverse = false)
@@ -238,11 +293,10 @@ namespace ProjectCatan
         {
             Cell[] cells = GetVertexCells(point, index);
             if (cells.Length == 0) { return false; }
-            switch (index)
+            foreach (Cell cell in cells)
             {
-
+                //cell.IsVertex(cell.ConvertIndex(index, point));
             }
-            // *
             return true;
         }
     }
