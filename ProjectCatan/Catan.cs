@@ -33,6 +33,7 @@ namespace ProjectCatan
         White
     }
 
+
     internal class Point : IEquatable<Point>
     {
         //https://www.redblobgames.com/grids/hexagons/
@@ -295,7 +296,7 @@ namespace ProjectCatan
 
         public void SetThieves(Point point)
         {
-            cells.All(cell => cell.IsThieves = false);
+            _ = cells.All(x => x.IsThieves = false);
             GetCell(point).IsThieves = true;
         }
     }
