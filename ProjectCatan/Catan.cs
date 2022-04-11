@@ -265,12 +265,12 @@ namespace ProjectCatan
 
         public bool CanSetRoad(Point point, int index, Team team)
         {
-            if (GetCell(point).IsVertex(Index(index, -1), team)) { return true; }
             if (GetCell(point).IsVertex(Index(index, 1), team)) { return true; }
-            if (GetCell(point).IsRoad(Index(index, -1), team)) { return true; }
+            if (GetCell(point).IsVertex(index, team)) { return true; }
             if (GetCell(point).IsRoad(Index(index, 1), team)) { return true; }
+            if (GetCell(point).IsRoad(Index(index, -1), team)) { return true; }
             if (GetCell(point.Vector(index)).IsNull) { return true; }
-            if (!GetCell(point.Vector(index)).IsNull)
+            else
             {
                 if (GetCell(point.Vector(index)).IsRoad(Index(index, -2), team)) { return true; }
                 if (GetCell(point.Vector(index)).IsRoad(Index(index, 2), team)) { return true; }

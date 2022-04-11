@@ -15,15 +15,11 @@ namespace ProjectCatan
             board.GetCell(new Point()).SetVertex(0, Team.Red, Vertex.Settlement);
             board.GetCell(new Point().NorthEast).SetVertex(4, Team.Red, Vertex.Settlement);
             board.SetRoad(new Point(), 0, Team.Red);
-            Console.WriteLine(board.GetCell(new Point(0, 0, 0)));
+            board.SetRoad(new Point(), 1, Team.Red);
+            board.SetSettlement(new Point(), 2, Team.Red);
+            Console.WriteLine(board.GetCell(new Point()));
             Console.WriteLine(board.GetCell(new Point().NorthEast));
-            //board.SetRoad(new Point(), 1, Team.Red);
-            //Console.WriteLine(board.GetCell(new Point()));
-            //Console.WriteLine(board.GetCell(new Point().East));
-            //board.SetSettlement(new Point(), 3, Team.Red);
-            //Console.WriteLine(board.GetCell(new Point()));
-            //Console.WriteLine(board.GetCell(new Point().SouthEast));
-            //Console.WriteLine(board.GetCell(new Point().SouthWest));
+            Console.WriteLine(board.GetCell(new Point().East));
         }
     }
 }
