@@ -6,14 +6,9 @@ using System.Threading.Tasks;
 
 namespace ProjectCatan
 {
-
-    internal class Catan
-    {
-
-    }
-
     enum Resource
     {
+        Null,
         Wood,
         Brick,
         Sheep,
@@ -24,19 +19,21 @@ namespace ProjectCatan
 
     enum Vertex
     {
+        Null,
         Settlement,
         City
     }
 
     enum Team
     {
+        Null,
         Red,
         Blue,
         Yellow,
         White
     }
 
-    internal class Point
+    internal class Point : IEquatable<Point>
     {
         //https://www.redblobgames.com/grids/hexagons/
 
@@ -62,18 +59,41 @@ namespace ProjectCatan
             this.s = s;
         }
 
-        public Point RightUp(int distance = 1) => new(Q + distance, R - distance, S);
-        public Point Right(int distance = 1) => new(Q + distance, R, S - distance);
-        public Point RightDown(int distance = 1) => new(Q, R + distance, S - distance);
-        public Point LeftDown(int distance = 1) => new(Q - distance, R + distance, S);
-        public Point Left(int distance = 1) => new(Q - distance, R, S + distance);
-        public Point LeftUp(int distance = 1) => new(Q, R - distance, S + distance);
+        public Point NorthEast => new(Q + 1, R - 1, S);
+        public Point East => new(Q + 1, R, S - 1);
+        public Point SouthEast => new(Q, R + 1, S - 1);
+        public Point SouthWest => new(Q - 1, R + 1, S);
+        public Point West => new(Q - 1, R, S + 1);
+        public Point NorthWest => new(Q, R - 1, S + 1);
+
+        public Point Vector(int index)
+        {
+            return index switch
+            {
+                0 => NorthEast,
+                1 => East,
+                2 => SouthEast,
+                3 => SouthWest,
+                4 => West,
+                5 => NorthWest,
+                _ => this,
+            };
+        }
+
+        public override string ToString()
+        {
+            return $"({Q}, {R}, {S})";
+        }
+
+        public bool Equals(Point? other)
+        {
+            if (other is null) { return false; }
+            return Q == other.Q && R == other.R && S == other.S;
+        }
 
         public override bool Equals(object? obj)
         {
-            if (obj == null || GetType() != obj.GetType()) { return false; }
-            Point point = (Point)obj;
-            return Q == point.Q && R == point.R && S == point.S;
+            return Equals(obj as Point);
         }
 
         public override int GetHashCode()
@@ -81,9 +101,15 @@ namespace ProjectCatan
             return Q.GetHashCode() ^ R.GetHashCode() ^ S.GetHashCode();
         }
 
-        public override string ToString()
+        public static bool operator ==(Point aPoint, Point bPoint)
         {
-            return $"({Q}, {R}, {S})";
+            if (aPoint is null) return bPoint is null;
+            return aPoint.Equals(bPoint);
+        }
+
+        public static bool operator !=(Point aPoint, Point bPoint)
+        {
+            return !(aPoint == bPoint);
         }
 
         public static Point operator +(Point aPoint, Point bPoint)
@@ -104,10 +130,7 @@ namespace ProjectCatan
 
         private readonly Vertex[] vertices = new Vertex[6];
         private readonly Team[] vertexTeams = new Team[6];
-        private readonly bool[] roads = new bool[6];
         private readonly Team[] roadTeams = new Team[6];
-
-        private readonly bool isThieves;
 
         public Cell()
         {
@@ -131,64 +154,28 @@ namespace ProjectCatan
         public Resource Resource => resource;
         public int Number => number;
 
-        public bool IsRoad(int index) => roads[index];
         public bool IsRoad(int index, Team team) => roadTeams[index] == team;
 
         public bool IsVertex(int index) => vertices[index] != 0;
         public bool IsVertex(int index, Team team) => vertexTeams[index] == team;
-        public bool IsThieves => isThieves;
+        public bool IsThieves { get; set; }
 
-        public bool IsNull => Point == new Point(-1, -1, -1);
 
-        public bool GetRoad(int index) => roads[index];
+        public bool IsNull => Point.Equals(new Point(-1, -1, -1));
+
         public Team GetRoadTeam(int index) => roadTeams[index];
         public Vertex GetVertex(int index) => vertices[index];
         public Team GetVertexTeam(int index) => vertexTeams[index];
 
         public void SetRoad(int index, Team team)
         {
-            roads[index] = true;
             roadTeams[index] = team;
         }
+
         public void SetVertex(int index, Team team, Vertex vertex)
         {
             vertices[index] = vertex;
             vertexTeams[index] = team;
-        }
-
-        public int ConvertIndex(Point oldPoint, int oldIndex)
-        {
-            if (Point == oldPoint.RightUp())
-            {
-                if (oldIndex == 0) { return 4; }
-                if (oldIndex == 1) { return 3; }
-            }
-            if (Point == oldPoint.Right())
-            {
-                if (oldIndex == 1) { return 5; }
-                if (oldIndex == 2) { return 4; }
-            }
-            if (Point == oldPoint.RightDown())
-            {
-                if (oldIndex == 2) { return 0; }
-                if (oldIndex == 3) { return 5; }
-            }
-            if (Point == oldPoint.LeftDown())
-            {
-                if (oldIndex == 3) { return 1; }
-                if (oldIndex == 4) { return 0; }
-            }
-            if (Point == oldPoint.Left())
-            {
-                if (oldIndex == 4) { return 2; }
-                if (oldIndex == 5) { return 1; }
-            }
-            if (Point == oldPoint.LeftUp())
-            {
-                if (oldIndex == 5) { return 3; }
-                if (oldIndex == 0) { return 2; }
-            }
-            return -1;
         }
 
         public int Count(Team team)
@@ -211,6 +198,17 @@ namespace ProjectCatan
                 }
             }
             return count;
+        }
+
+        public override string ToString()
+        {
+            string value = "";
+            for (int i = 0; i < 6; i++)
+            {
+                value += $"{GetVertex(i).ToString()[..1]}({GetVertexTeam(i).ToString()[..1]})";
+                value += $"-{GetRoadTeam(i).ToString()[..1]}-";
+            }
+            return $"{Point} {value}";
         }
     }
 
@@ -242,176 +240,41 @@ namespace ProjectCatan
             cells[18] = new Cell(2, -1, -1, Resource.Sheep, 10);
         }
 
+        public Cell[] Cells => cells;
+
+        private static int Index(int index, int value) => (index + value + 6) % 6;
+
         public bool IsRange(Point point) => cells.Where(x => x.Point == point).Any();
 
         public Cell GetCell(Point point) => IsRange(point) ? cells.Where(x => x.Point == point).ToArray()[0] : new();
 
-        public Cell[] GeRoundedCells(Point point) => cells.Where(x => Math.Abs(x.Point.Q - point.Q) == 1 && Math.Abs(x.Point.R - point.R) == 1 && Math.Abs(x.Point.S - point.S) == 1 && !x.IsNull).ToArray();
-
-        public void GetRoundedVertex(Point point, int index, out Vertex vertex, out Team vertexTeam)
-        {
-            vertex = 0;
-            vertexTeam = 0;
-            switch (index)
-            {
-                case 0:
-                    if (!GetCell(point.LeftUp()).IsNull)
-                    {
-                        vertex = GetCell(point.LeftUp()).GetVertex(1);
-                        vertexTeam = GetCell(point.LeftUp()).GetVertexTeam(1);
-                        return;
-                    }
-                    if (!GetCell(point.RightUp()).IsNull)
-                    {
-                        vertex = GetCell(point.RightUp()).GetVertex(5);
-                        vertexTeam = GetCell(point.RightUp()).GetVertexTeam(5);
-                        return;
-                    }
-                    break;
-                case 1:
-                    if (!GetCell(point.RightUp()).IsNull)
-                    {
-                        vertex = GetCell(point.RightUp()).GetVertex(2);
-                        vertexTeam = GetCell(point.RightUp()).GetVertexTeam(2);
-                        return;
-                    }
-                    if (!GetCell(point.RightUp()).IsNull)
-                    {
-                        vertex = GetCell(point.Right()).GetVertex(0);
-                        vertexTeam = GetCell(point.Right()).GetVertexTeam(0);
-                        return;
-                    }
-                    break;
-                case 2:
-                    if (!GetCell(point.Right()).IsNull)
-                    {
-                        vertex = GetCell(point.Right()).GetVertex(3);
-                        vertexTeam = GetCell(point.Right()).GetVertexTeam(3);
-                        return;
-                    }
-                    if (!GetCell(point.RightDown()).IsNull)
-                    {
-                        vertex = GetCell(point.RightDown()).GetVertex(1);
-                        vertexTeam = GetCell(point.RightDown()).GetVertexTeam(1);
-                        return;
-                    }
-                    break;
-                case 3:
-                    if (!GetCell(point.RightDown()).IsNull)
-                    {
-                        vertex = GetCell(point.RightDown()).GetVertex(4);
-                        vertexTeam = GetCell(point.RightDown()).GetVertexTeam(4);
-                        return;
-                    }
-                    if (!GetCell(point.LeftDown()).IsNull)
-                    {
-                        vertex = GetCell(point.LeftDown()).GetVertex(2);
-                        vertexTeam = GetCell(point.LeftDown()).GetVertexTeam(2);
-                        return;
-                    }
-                    break;
-                case 4:
-                    if (!GetCell(point.LeftDown()).IsNull)
-                    {
-                        vertex = GetCell(point.LeftDown()).GetVertex(5);
-                        vertexTeam = GetCell(point.LeftDown()).GetVertexTeam(5);
-                        return;
-                    }
-                    if (!GetCell(point.Left()).IsNull)
-                    {
-                        vertex = GetCell(point.Left()).GetVertex(3);
-                        vertexTeam = GetCell(point.Left()).GetVertexTeam(3);
-                        return;
-                    }
-                    break;
-                case 5:
-                    if (!GetCell(point.Left()).IsNull)
-                    {
-                        vertex = GetCell(point.Left()).GetVertex(0);
-                        vertexTeam = GetCell(point.Left()).GetVertexTeam(0);
-                        return;
-                    }
-                    if (!GetCell(point.LeftUp()).IsNull)
-                    {
-                        vertex = GetCell(point.LeftUp()).GetVertex(4);
-                        vertexTeam = GetCell(point.LeftUp()).GetVertexTeam(4);
-                        return;
-                    }
-                    break;
-            }
-        }
-
-        public void GetRoundedRoad(Point point, int index, out bool road, out Team roadTeam, bool reverse = false)
-        {
-            if (!reverse)
-            {
-                switch (index)
-                {
-                    case 0:
-                        road = GetCell(point.RightUp()).GetRoad(4);
-                        roadTeam = GetCell(point.RightUp()).GetRoadTeam(4);
-                        return;
-                    case 1:
-                        road = GetCell(point.Right()).GetRoad(5);
-                        roadTeam = GetCell(point.Right()).GetRoadTeam(5);
-                        return;
-                    case 2:
-                        road = GetCell(point.RightDown()).GetRoad(0);
-                        roadTeam = GetCell(point.RightDown()).GetRoadTeam(0);
-                        return;
-                    case 3:
-                        road = GetCell(point.LeftDown()).GetRoad(1);
-                        roadTeam = GetCell(point.LeftDown()).GetRoadTeam(1);
-                        return;
-                    case 4:
-                        road = GetCell(point.Left()).GetRoad(2);
-                        roadTeam = GetCell(point.Left()).GetRoadTeam(2);
-                        return;
-                    case 5:
-                        road = GetCell(point.LeftUp()).GetRoad(3);
-                        roadTeam = GetCell(point.LeftUp()).GetRoadTeam(3);
-                        return;
-                }
-            }
-            GetRoundedRoad(point, index == 0 ? 5 : (index - 1), out road, out roadTeam);
-            return;
-        }
-
-        public Cell GetCrossRoad(Point point, int index, bool reverse = false)
-        {
-            return index switch
-            {
-                0 => GetCell(point.RightUp()),
-                1 => GetCell(point.Right()),
-                2 => GetCell(point.RightDown()),
-                3 => GetCell(point.LeftDown()),
-                4 => GetCell(point.Left()),
-                5 => GetCell(point.LeftUp()),
-                _ => GetCrossRoad(point, index == 0 ? 5 : (index - 1)),
-            };
-        }
-
         public bool CanSetSettlement(Point point, int index, Team team)
         {
-            GetRoundedVertex(point, index, out Vertex vertex, out Team _);
-            if (GetCell(point).GetVertex(index == 0 ? 5 : (index - 1)) != 0) { return false; }
-            if (GetCell(point).GetVertex(index == 5 ? 0 : (index + 1)) != 0) { return false; }
-            if (vertex != 0) { return false; }
-            GetRoundedRoad(point, index, out bool _, out Team roadTeam);
-            if (GetCell(point).GetRoadTeam(index == 0 ? 5 : (index - 1)) != team && GetCell(point).GetRoadTeam(index == 5 ? 0 : (index + 1)) != team && roadTeam != team) { return false; }
-            return true;
+            if (GetCell(point).IsVertex(Index(index, -1))) { return false; }
+            if (GetCell(point).IsVertex(Index(index, 1))) { return false; }
+            if (!GetCell(point.Vector(index)).IsNull) { if (GetCell(point.Vector(index)).IsVertex(Index(index, -1))) { return false; } }
+            if (!GetCell(point.Vector(Index(index, -1))).IsNull) { if (GetCell(point.Vector(Index(index, -1))).IsVertex(Index(index, 1))) { return false; } }
+            if (GetCell(point).IsRoad(index, team)) { return true; }
+            if (GetCell(point).IsRoad(Index(index, -1), team)) { return true; }
+            if (!GetCell(point.Vector(index)).IsNull) { if (GetCell(point.Vector(index)).IsRoad(Index(index, -2), team)) { return true; } }
+            if (!GetCell(point.Vector(Index(index, -1))).IsNull) { if (GetCell(point.Vector(Index(index, -1))).IsRoad(Index(index, 2), team)) { return true; } }
+            return false;
         }
 
         public bool CanSetCity(Point point, int index, Team team) => GetCell(point).GetVertex(index) == Vertex.Settlement && GetCell(point).GetVertexTeam(index) == team;
 
         public bool CanSetRoad(Point point, int index, Team team)
         {
-            if (GetCell(point).GetVertexTeam(index == 0 ? 5 : (index - 1)) == team) { return true; }
-            if (GetCell(point).GetVertexTeam(index == 5 ? 0 : (index + 1)) != team) { return true; }
-            if (GetCell(point).GetRoadTeam(index == 0 ? 5 : (index - 1)) == team) { return true; }
-            if (GetCell(point).GetRoadTeam(index == 5 ? 0 : (index + 1)) == team) { return true; }
-            if (GetCrossRoad(point, index).GetRoadTeam(GetCrossRoad(point, index).ConvertIndex(point, index) - 1) == team) { return true; }
-            if (GetCrossRoad(point, index).GetRoadTeam(GetCrossRoad(point, index).ConvertIndex(point, index) + 1) == team) { return true; }
+            if (GetCell(point).IsVertex(Index(index, -1), team)) { return true; }
+            if (GetCell(point).IsVertex(Index(index, 1), team)) { return true; }
+            if (GetCell(point).IsRoad(Index(index, -1), team)) { return true; }
+            if (GetCell(point).IsRoad(Index(index, 1), team)) { return true; }
+            if (GetCell(point.Vector(index)).IsNull) { return true; }
+            if (!GetCell(point.Vector(index)).IsNull)
+            {
+                if (GetCell(point.Vector(index)).IsRoad(Index(index, -2), team)) { return true; }
+                if (GetCell(point.Vector(index)).IsRoad(Index(index, 2), team)) { return true; }
+            }
             return false;
         }
 
@@ -419,7 +282,21 @@ namespace ProjectCatan
         {
             if (!CanSetSettlement(point, index, team)) { return; }
             GetCell(point).SetVertex(index, team, Vertex.Settlement);
+            if (!GetCell(point.Vector(index)).IsNull) { GetCell(point.Vector(index)).SetVertex(Index(index, -2), team, Vertex.Settlement); }
+            if (!GetCell(point.Vector(Index(index, -1))).IsNull) { GetCell(point.Vector(Index(index, -1))).SetVertex(Index(index, 2), team, Vertex.Settlement); }
+        }
 
+        public void SetRoad(Point point, int index, Team team)
+        {
+            if (!CanSetRoad(point, index, team)) { return; }
+            GetCell(point).SetRoad(index, team);
+            if (!GetCell(point.Vector(index)).IsNull) { GetCell(point.Vector(index)).SetRoad(Index(index, 3), team); }
+        }
+
+        public void SetThieves(Point point)
+        {
+            cells.All(cell => cell.IsThieves = false);
+            GetCell(point).IsThieves = true;
         }
     }
 }
