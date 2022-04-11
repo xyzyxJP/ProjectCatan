@@ -156,7 +156,7 @@ namespace ProjectCatan
             vertexTeams[index] = team;
         }
 
-        public int ConvertIndex(int oldIndex, Point oldPoint)
+        public int ConvertIndex(Point oldPoint, int oldIndex)
         {
             if (Point == oldPoint.RightUp())
             {
@@ -377,7 +377,21 @@ namespace ProjectCatan
             return;
         }
 
-        public bool canSetSettlement(Point point, int index, Team team)
+        public Cell GetCrossRoad(Point point, int index, bool reverse = false)
+        {
+            return index switch
+            {
+                0 => GetCell(point.RightUp()),
+                1 => GetCell(point.Right()),
+                2 => GetCell(point.RightDown()),
+                3 => GetCell(point.LeftDown()),
+                4 => GetCell(point.Left()),
+                5 => GetCell(point.LeftUp()),
+                _ => GetCrossRoad(point, index == 0 ? 5 : (index - 1)),
+            };
+        }
+
+        public bool CanSetSettlement(Point point, int index, Team team)
         {
             GetRoundedVertex(point, index, out Vertex vertex, out Team _);
             if (GetCell(point).GetVertex(index == 0 ? 5 : (index - 1)) != 0) { return false; }
@@ -388,7 +402,23 @@ namespace ProjectCatan
             return true;
         }
 
+        public bool CanSetCity(Point point, int index, Team team) => GetCell(point).GetVertex(index) == Vertex.Settlement && GetCell(point).GetVertexTeam(index) == team;
 
+        public bool canSetRoad(Point point, int index, Team team)
+        {
+            if (GetCell(point).GetVertexTeam(index == 0 ? 5 : (index - 1)) == team) { return true; }
+            if (GetCell(point).GetVertexTeam(index == 5 ? 0 : (index + 1)) != team) { return true; }
+            if (GetCell(point).GetRoadTeam(index == 0 ? 5 : (index - 1)) == team) { return true; }
+            if (GetCell(point).GetRoadTeam(index == 5 ? 0 : (index + 1)) == team) { return true; }
+            if (GetCrossRoad(point, index).GetRoadTeam(GetCrossRoad(point, index).ConvertIndex(point, index) - 1) == team) { return true; }
+            if (GetCrossRoad(point, index).GetRoadTeam(GetCrossRoad(point, index).ConvertIndex(point, index) + 1) == team) { return true; }
+            return false;
+        }
 
+        public void SetSettlement(Point point, int index, Team team)
+        {
+            if (!CanSetSettlement(point, index, team)) { return; }
+            GetCell(point).SetVertex(index, team, Vertex.Settlement);
+        }
     }
 }
