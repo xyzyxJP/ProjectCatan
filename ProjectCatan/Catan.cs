@@ -248,7 +248,7 @@ namespace ProjectCatan
 
         public Cell[] GeRoundedCells(Point point) => cells.Where(x => Math.Abs(x.Point.Q - point.Q) == 1 && Math.Abs(x.Point.R - point.R) == 1 && Math.Abs(x.Point.S - point.S) == 1 && !x.IsNull).ToArray();
 
-        public void GetRoundedVertices(Point point, int index, out Vertex vertex, out Team vertexTeam)
+        public void GetRoundedVertex(Point point, int index, out Vertex vertex, out Team vertexTeam)
         {
             vertex = 0;
             vertexTeam = 0;
@@ -341,29 +341,54 @@ namespace ProjectCatan
             }
         }
 
-        public Cell GetEdgeCells(Point point, int index, bool reverse = false)
+        public void GetRoundedRoad(Point point, int index, out bool road, out Team roadTeam, bool reverse = false)
         {
             if (!reverse)
             {
-                return index switch
+                switch (index)
                 {
-                    0 => GetCell(point.RightUp()),
-                    1 => GetCell(point.Right()),
-                    2 => GetCell(point.RightDown()),
-                    3 => GetCell(point.LeftDown()),
-                    4 => GetCell(point.Left()),
-                    5 => GetCell(point.LeftUp()),
-                    _ => new(),
-                };
+                    case 0:
+                        road = GetCell(point.RightUp()).GetRoad(4);
+                        roadTeam = GetCell(point.RightUp()).GetRoadTeam(4);
+                        return;
+                    case 1:
+                        road = GetCell(point.Right()).GetRoad(5);
+                        roadTeam = GetCell(point.Right()).GetRoadTeam(5);
+                        return;
+                    case 2:
+                        road = GetCell(point.RightDown()).GetRoad(0);
+                        roadTeam = GetCell(point.RightDown()).GetRoadTeam(0);
+                        return;
+                    case 3:
+                        road = GetCell(point.LeftDown()).GetRoad(1);
+                        roadTeam = GetCell(point.LeftDown()).GetRoadTeam(1);
+                        return;
+                    case 4:
+                        road = GetCell(point.Left()).GetRoad(2);
+                        roadTeam = GetCell(point.Left()).GetRoadTeam(2);
+                        return;
+                    case 5:
+                        road = GetCell(point.LeftUp()).GetRoad(3);
+                        roadTeam = GetCell(point.LeftUp()).GetRoadTeam(3);
+                        return;
+                }
             }
-            return GetEdgeCells(point, index == 0 ? 5 : (index - 1), false);
+            GetRoundedRoad(point, index == 0 ? 5 : (index - 1), out road, out roadTeam);
+            return;
         }
 
         public bool canSetSettlement(Point point, int index, Team team)
         {
-            GetRoundedVertices(point, index, out Vertex vertex, out Team vertexTeam);
-
+            GetRoundedVertex(point, index, out Vertex vertex, out Team _);
+            if (GetCell(point).GetVertex(index == 0 ? 5 : (index - 1)) != 0) { return false; }
+            if (GetCell(point).GetVertex(index == 5 ? 0 : (index + 1)) != 0) { return false; }
+            if (vertex != 0) { return false; }
+            GetRoundedRoad(point, index, out bool _, out Team roadTeam);
+            if (GetCell(point).GetRoadTeam(index == 0 ? 5 : (index - 1)) != team && GetCell(point).GetRoadTeam(index == 5 ? 0 : (index + 1)) != team && roadTeam != team) { return false; }
             return true;
         }
+
+
+
     }
 }
