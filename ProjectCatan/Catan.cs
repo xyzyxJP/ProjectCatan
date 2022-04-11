@@ -404,7 +404,7 @@ namespace ProjectCatan
 
         public bool CanSetCity(Point point, int index, Team team) => GetCell(point).GetVertex(index) == Vertex.Settlement && GetCell(point).GetVertexTeam(index) == team;
 
-        public bool canSetRoad(Point point, int index, Team team)
+        public bool CanSetRoad(Point point, int index, Team team)
         {
             if (GetCell(point).GetVertexTeam(index == 0 ? 5 : (index - 1)) == team) { return true; }
             if (GetCell(point).GetVertexTeam(index == 5 ? 0 : (index + 1)) != team) { return true; }
@@ -419,6 +419,7 @@ namespace ProjectCatan
         {
             if (!CanSetSettlement(point, index, team)) { return; }
             GetCell(point).SetVertex(index, team, Vertex.Settlement);
+
         }
     }
 }
