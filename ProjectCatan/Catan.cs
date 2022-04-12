@@ -281,6 +281,14 @@ namespace ProjectCatan
             if (!GetCell(point.Vector(Index(index, -1))).IsNull) { GetCell(point.Vector(Index(index, -1))).SetVertex(Index(index, 2), team, Vertex.Settlement); }
         }
 
+        public void SetCity(Point point,int index, Team team)
+        {
+            if (!CanSetCity(point, index, team)) { return; }
+            GetCell(point).SetVertex(index, team, Vertex.City);
+            if (!GetCell(point.Vector(index)).IsNull) { GetCell(point.Vector(index)).SetVertex(Index(index, -2), team, Vertex.City); }
+            if (!GetCell(point.Vector(Index(index, -1))).IsNull) { GetCell(point.Vector(Index(index, -1))).SetVertex(Index(index, 2), team, Vertex.City); }
+        }
+
         public void SetRoad(Point point, int index, Team team)
         {
             if (!CanSetRoad(point, index, team)) { return; }
