@@ -138,19 +138,13 @@ namespace ProjectCatan
             point = new Point(-1, -1, -1);
         }
 
-        public Cell(int q, int r, int s, Resource resource, int number)
-        {
-            point = new Point(q, r, s);
-            this.resource = resource;
-            this.number = number;
-        }
-
         public Cell(Point point, Resource resource, int number)
         {
             this.point = point;
             this.resource = resource;
             this.number = number;
         }
+
         public Point Point => point;
         public Resource Resource => resource;
         public int Number => number;
@@ -220,25 +214,25 @@ namespace ProjectCatan
         public Board()
         {
             cells = new Cell[19];
-            cells[0] = new Cell(0, 0, 0, Resource.Wheat, 11);
-            cells[1] = new Cell(1, -1, 0, Resource.Brick, 5);
-            cells[2] = new Cell(2, -2, 0, Resource.Wheat, 9);
-            cells[3] = new Cell(-1, 1, 0, Resource.Sheep, 10);
-            cells[4] = new Cell(-2, 2, 0, Resource.Ore, 5);
-            cells[5] = new Cell(0, -1, 1, Resource.Ore, 6);
-            cells[6] = new Cell(0, -2, 2, Resource.Wood, 11);
-            cells[7] = new Cell(0, 1, -1, Resource.Sheep, 9);
-            cells[8] = new Cell(0, 2, -2, Resource.Wood, 6);
-            cells[9] = new Cell(1, 0, -1, Resource.Wood, 4);
-            cells[10] = new Cell(2, 0, -2, Resource.Wheat, 8);
-            cells[11] = new Cell(-1, 0, 1, Resource.Wood, 3);
-            cells[12] = new Cell(-2, 0, 2, Resource.Desert, 0);
-            cells[13] = new Cell(1, 1, -2, Resource.Ore, 3);
-            cells[14] = new Cell(-1, 2, -1, Resource.Wheat, 2);
-            cells[15] = new Cell(-2, 1, 1, Resource.Brick, 8);
-            cells[16] = new Cell(-1, -1, 2, Resource.Brick, 4);
-            cells[17] = new Cell(1, -2, 1, Resource.Sheep, 12);
-            cells[18] = new Cell(2, -1, -1, Resource.Sheep, 10);
+            cells[0] = new Cell(new(0, 0, 0), Resource.Wheat, 11);
+            cells[1] = new Cell(new(1, -1, 0), Resource.Brick, 5);
+            cells[2] = new Cell(new(2, -2, 0), Resource.Wheat, 9);
+            cells[3] = new Cell(new(-1, 1, 0), Resource.Sheep, 10);
+            cells[4] = new Cell(new(-2, 2, 0), Resource.Ore, 5);
+            cells[5] = new Cell(new(0, -1, 1), Resource.Ore, 6);
+            cells[6] = new Cell(new(0, -2, 2), Resource.Wood, 11);
+            cells[7] = new Cell(new(0, 1, -1), Resource.Sheep, 9);
+            cells[8] = new Cell(new(0, 2, -2), Resource.Wood, 6);
+            cells[9] = new Cell(new(1, 0, -1), Resource.Wood, 4);
+            cells[10] = new Cell(new(2, 0, -2), Resource.Wheat, 8);
+            cells[11] = new Cell(new(-1, 0, 1), Resource.Wood, 3);
+            cells[12] = new Cell(new(-2, 0, 2), Resource.Desert, 0);
+            cells[13] = new Cell(new(1, 1, -2), Resource.Ore, 3);
+            cells[14] = new Cell(new(-1, 2, -1), Resource.Wheat, 2);
+            cells[15] = new Cell(new(-2, 1, 1), Resource.Brick, 8);
+            cells[16] = new Cell(new(-1, -1, 2), Resource.Brick, 4);
+            cells[17] = new Cell(new(1, -2, 1), Resource.Sheep, 12);
+            cells[18] = new Cell(new(2, -1, -1), Resource.Sheep, 10);
         }
 
         public Cell[] Cells => cells;
